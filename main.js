@@ -500,7 +500,6 @@ window.onload = function () {
     pencilTool();
   } else {
     updateCurr();
-    startup();
     dataURL = localStorage.getItem('dataURL');
     drawImg(dataURL);
     pencilTool();
