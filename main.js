@@ -572,7 +572,7 @@ var grayscaleBtn = document.getElementById('grayscale');
 grayscaleBtn.addEventListener('click', grayscale);
 
 window.onload = function () {
-  if (localStorage.length === 0) {
+  if (!localStorage.getItem('matrix') && !localStorage.getItem('dataURL') && !localStorage.getItem('currColor')) {
     startup();
     getLinkToImage();
     pencilTool();
