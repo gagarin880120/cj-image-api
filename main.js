@@ -81,14 +81,14 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(3);
+module.exports = __webpack_require__(4);
 
 
 /***/ }),
@@ -135,6 +135,22 @@ module.exports = _asyncToGenerator;
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var arrayWithoutHoles = __webpack_require__(5);
+
+var iterableToArray = __webpack_require__(6);
+
+var nonIterableSpread = __webpack_require__(7);
+
+function _toConsumableArray(arr) {
+  return arrayWithoutHoles(arr) || iterableToArray(arr) || nonIterableSpread();
+}
+
+module.exports = _toConsumableArray;
+
+/***/ }),
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -143,8 +159,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1);
 /* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _style_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4);
-/* harmony import */ var _style_css__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_style_css__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2);
+/* harmony import */ var _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _style_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8);
+/* harmony import */ var _style_css__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_style_css__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -155,6 +174,7 @@ var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 var paintBtn = document.getElementById('paint');
 var pencilBtn = document.getElementById('pencil');
+var colorPick = document.getElementById('colorPicker');
 var dataURL;
 var data;
 var imageData;
@@ -173,6 +193,9 @@ var currentColor = '#00ff00';
 var colorInputEl = document.getElementById('input-color');
 var currentColorEl = document.getElementById('current-color');
 var prevColorEl = document.getElementById('prev-color');
+var prevColorBtn = document.getElementById('prev-color-button');
+var redColorBtn = document.getElementById('red-color-button');
+var blueColorBtn = document.getElementById('blue-color-button');
 
 function updateCurr() {
   prevColorEl.style.background = currentColorEl.style.background;
@@ -188,8 +211,85 @@ function startup() {
     localStorage.setItem('prevColor', prevColorEl.style.background);
   });
   colorInputEl.select();
-} // =================================FILL-BUCKET-TOOL============================
+}
 
+function RGBAToHex(array) {
+  var rgbArr = array.slice(0, 3);
+  var r = rgbArr[0].toString(16);
+  var g = rgbArr[1].toString(16);
+  var b = rgbArr[2].toString(16);
+  if (r.length === 1) r = "0".concat(r);
+  if (g.length === 1) g = "0".concat(g);
+  if (b.length === 1) b = "0".concat(b);
+  return "#".concat(r).concat(g).concat(b);
+}
+
+function pick(event) {
+  var x = event.layerX / (512 / matrixSize);
+  var y = event.layerY / (512 / matrixSize);
+  var pixel = ctx.getImageData(x, y, 1, 1);
+
+  var rgba = _babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_2___default()(pixel.data);
+
+  currentColor = RGBAToHex(rgba);
+  localStorage.setItem('currColor', currentColor);
+  updateCurr();
+  localStorage.setItem('prevColor', prevColorEl.style.background);
+}
+
+prevColorBtn.addEventListener('click', function () {
+  currentColor = prevColorEl.style.background;
+  localStorage.setItem('currColor', currentColor);
+  updateCurr();
+  localStorage.setItem('prevColor', prevColorEl.style.background);
+});
+redColorBtn.addEventListener('click', function () {
+  currentColor = '#FF0000';
+  localStorage.setItem('currColor', currentColor);
+  updateCurr();
+  localStorage.setItem('prevColor', prevColorEl.style.background);
+});
+blueColorBtn.addEventListener('click', function () {
+  currentColor = '#0000FF';
+  localStorage.setItem('currColor', currentColor);
+  updateCurr();
+  localStorage.setItem('prevColor', prevColorEl.style.background);
+});
+colorPick.addEventListener('click', function () {
+  window.state.currentTool = 'chooseColor';
+  localStorage.setItem('tool', window.state.currentTool);
+});
+document.addEventListener('click', function (event) {
+  if (window.state.currentTool === 'chooseColor') {
+    colorPick.style.fontWeight = 'bold';
+    colorPick.style.color = 'black';
+    pencilBtn.style.fontWeight = 'normal';
+    pencilBtn.style.color = 'gray';
+    paintBtn.style.fontWeight = 'normal';
+    paintBtn.style.color = 'gray';
+
+    if (event.target.className === 'canvas') {
+      pick(event);
+    } else if (event.target.id === 'colorPicker' || event.target.id === 'input-color' || event.target.className === 'input-color-span') {
+      currentColor = currentColorEl.style.background;
+      localStorage.setItem('currColor', currentColor);
+    } else if (event.target.id === 'red-color-button' || event.target.id === 'red-color-span' || event.target.classList[1] === 'red') {
+      currentColor = '#FF0000';
+      localStorage.setItem('currColor', currentColor);
+    } else if (event.target.id === 'blue-color-button' || event.target.id === 'blue-color-span' || event.target.classList[1] === 'blue') {
+      currentColor = '#0000FF';
+      localStorage.setItem('currColor', currentColor);
+    } else if (event.target.id === 'prev-color-button' || event.target.id === 'prev-color-span' || event.target.id === 'prev-color') {
+      currentColor = prevColorEl.style.background;
+      localStorage.setItem('currColor', currentColor);
+    } else {
+      currentColor = '#FFFFFF';
+      localStorage.setItem('currColor', currentColor);
+      updateCurr();
+      localStorage.setItem('prevColor', prevColorEl.style.background);
+    }
+  }
+}); // =================================FILL-BUCKET-TOOL============================
 
 paintBtn.addEventListener('click', function () {
   window.state.currentTool = 'fillBucket';
@@ -200,6 +300,8 @@ document.addEventListener('click', function (event) {
     paintBtn.style.color = 'black';
     pencilBtn.style.fontWeight = 'normal';
     pencilBtn.style.color = 'gray';
+    colorPick.style.fontWeight = 'normal';
+    colorPick.style.color = 'gray';
 
     if (event.target.className === 'canvas') {
       ctx.fillStyle = currentColor;
@@ -291,6 +393,8 @@ function pencilTool() {
     pencilBtn.style.color = 'black';
     paintBtn.style.fontWeight = 'normal';
     paintBtn.style.color = 'gray';
+    colorPick.style.fontWeight = 'normal';
+    colorPick.style.color = 'gray';
     canvas.addEventListener('mousedown', function (e) {
       painting = true;
       ctx.fillStyle = currentColor;
@@ -507,7 +611,7 @@ window.onload = function () {
 };
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -1239,7 +1343,43 @@ try {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
+/***/ (function(module, exports) {
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+}
+
+module.exports = _arrayWithoutHoles;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+function _iterableToArray(iter) {
+  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+}
+
+module.exports = _iterableToArray;
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance");
+}
+
+module.exports = _nonIterableSpread;
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // extracted by mini-css-extract-plugin
